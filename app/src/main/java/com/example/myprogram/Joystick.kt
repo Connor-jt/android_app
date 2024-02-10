@@ -43,7 +43,7 @@ class Joystick : View {
         setOnTouchListener(this)
         if (context is JoystickListener) joystickCallback = context as JoystickListener
     }
-
+    // test
 
     private fun drawJoystick(newX: Float, newY: Float) {
         //First determine the sin and cos of the angle that the touched point is at relative to the center of the joystick
