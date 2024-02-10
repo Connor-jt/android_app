@@ -2,102 +2,97 @@ package com.example.myprogram
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.SurfaceHolder
+import android.view.SurfaceView
 import android.view.View
+import kotlin.math.atan2
+import kotlin.math.pow
+import kotlin.math.sqrt
 
-
-class Joystick : View {
+class Joystick : SurfaceView { // implements SurfaceHolder.Callback, View.OnTouchListener
     // private state values
-    private var input_x: Float = 0f
-    private var input_y: Float = 0f
+    private var inputX: Float = 0f
+    private var inputY: Float = 0f
     // public state variables
-    var x: Float
-        get() = input_x
-        private set(value) {input_x = value}
-    var y: Float
-        get() = input_y
-        private set(value) {input_y = value}
-    var degrees: Float
+    var stickX: Float
+        get() = inputX
+        private set(value) {inputX = value}
+    var stickY: Float
+        get() = inputY
+        private set(value) {inputY = value}
+    var stick_degrees: Float
         get() = 0f // it would be ideal to cache the results instead of recomputing it each time its called???
         private set(value) {} // that would be a tradeoff i guess
 
-    // potentially junk
-    constructor(context: Context) : super(context) {}
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {}
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {}
+    // junk
+    constructor(context: Context) : super(context) {init()}
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {init()}
+    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {init()}
+    fun init(){
+        holder.addCallback(object : SurfaceHolder.Callback {
+            override fun surfaceCreated(holder: SurfaceHolder) {
+                setupDimensions();
+                updateJoystick(centerX, centerY);}
+            override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
+            override fun surfaceDestroyed(holder: SurfaceHolder) {}
+        })
+
+        setOnTouchListener(View.OnTouchListener { view, motionEvent ->
+            onTouch(view, motionEvent)
+            return@OnTouchListener true;
+        })
+    }
 
 
     private var centerX = 0f
     private var centerY = 0f
-
-
+    private var baseRadius = 0f
+    private var hatRadius = 0f
     private fun setupDimensions() {
-        centerX = (width / 2).toFloat()
-        centerY = (height / 2).toFloat()
+        centerX = width / 2f
+        centerY = height / 2f
+        baseRadius = width.coerceAtMost(height) / 3f
+        hatRadius = width.coerceAtMost(height) / 5f
     }
+    private fun updateJoystick(newX: Float, newY: Float) {
+        // update stored x,y & radius values
+        stickX = (newX - centerX) / baseRadius;
+        stickY = (newY - centerY) / baseRadius;
+        val angleRadians = atan2(newY, newX).toDouble()
+        val angleDegrees = Math.toDegrees(angleRadians)
+        // redraw joysticks
+        if (holder.surface.isValid) {
+            val myCanvas: Canvas = this.holder.lockCanvas() //Stuff to draw
+            val colors = Paint()
+            myCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR) // Clear the BG
+            //Draw the base first before shading
+            colors.setARGB(255, 0, 0, 255)
+            myCanvas.drawCircle(centerX, centerY, baseRadius, colors)
+            //Drawing the joystick hat
+            colors.setARGB(255, 0, 255, 0)
+            myCanvas.drawCircle(newX, newY,hatRadius,colors)
+            holder.unlockCanvasAndPost(myCanvas) //Write the new drawing to the SurfaceView
+    }}
 
-    fun test(){
-        setOnTouchListener(this)
-        if (context is JoystickListener) joystickCallback = context as JoystickListener
-    }
-    // test
-
-    private fun drawJoystick(newX: Float, newY: Float) {
-        //First determine the sin and cos of the angle that the touched point is at relative to the center of the joystick
-        val hypotenuse:Float = sqrt(
-            pow(
-                (newX - centerX).toDouble(),
-                2.0
-            ) + pow((newY - centerY).toDouble(), 2.0)
-        ).toFloat()
-        val sin:Float = (newY - centerY) / hypotenuse //sin = o/h
-        val cos:Float = (newX - centerX) / hypotenuse //cos = a/h
-    }
-
-    fun surfaceCreated(holder: SurfaceHolder?) {
-        setupDimensions()
-    }
-    fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {}
-    fun surfaceDestroyed(holder: SurfaceHolder?) {}
-
-    fun onTouch(v: View, e: MotionEvent): Boolean {
-        if (v == this) {
-            if (e.action != MotionEvent.ACTION_UP) {
-                val displacement = sqrt(
-                    pow(
-                        (e.x - centerX).toDouble(),
-                        2.0
-                    ) + pow((e.y - centerY).toDouble(), 2.0)
-                ).toFloat()
-                if (displacement < baseRadius) {
-                    drawJoystick(e.x, e.y)
-                    joystickCallback!!.onJoystickMoved(
-                        (e.x - centerX) / baseRadius, (e.y - centerY) / baseRadius,
-                        id
-                    )
-                } else {
-                    val ratio = baseRadius / displacement
-                    val constrainedX = centerX + (e.x - centerX) * ratio
-                    val constrainedY = centerY + (e.y - centerY) * ratio
-                    drawJoystick(constrainedX, constrainedY)
-                    joystickCallback!!.onJoystickMoved(
-                        (constrainedX - centerX) / baseRadius,
-                        (constrainedY - centerY) / baseRadius,
-                        id
-                    )
-                }
-            } else drawJoystick(centerX, centerY)
-            joystickCallback!!.onJoystickMoved(0, 0, id)
-        }
-        return true
-    }
-
-
-    interface JoystickListener {
-        fun onJoystickMoved(xPercent: Float, yPercent: Float, id: Int)
+    private fun onTouch(v: View, e: MotionEvent) {
+        if (v != this) return
+        if (e.action != MotionEvent.ACTION_UP) {
+            val displacement = sqrt((e.x - centerX).toDouble().pow(2.0) + (e.y - centerY).toDouble().pow(2.0)).toFloat()
+            if (displacement < baseRadius) {
+                updateJoystick(e.x, e.y)
+            } else {
+                val ratio = baseRadius / displacement
+                val constrainedX = centerX + (e.x - centerX) * ratio
+                val constrainedY = centerY + (e.y - centerY) * ratio
+                updateJoystick(constrainedX, constrainedY)
+        }} else updateJoystick(centerX, centerY)
     }
 
 }
+
+
