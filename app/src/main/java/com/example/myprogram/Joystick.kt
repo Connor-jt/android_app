@@ -25,7 +25,7 @@ class Joystick : SurfaceView { // implements SurfaceHolder.Callback, View.OnTouc
     var stickY: Float
         get() = inputY
         private set(value) {inputY = value}
-    var stick_degrees: Float
+    var stickRadians: Float
         get() = 0f // it would be ideal to cache the results instead of recomputing it each time its called???
         private set(value) {} // that would be a tradeoff i guess
 
@@ -33,7 +33,7 @@ class Joystick : SurfaceView { // implements SurfaceHolder.Callback, View.OnTouc
     constructor(context: Context) : super(context) {init()}
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {init()}
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {init()}
-    fun init(){
+    private fun init(){
         holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(holder: SurfaceHolder) {
                 setupDimensions();
@@ -44,7 +44,7 @@ class Joystick : SurfaceView { // implements SurfaceHolder.Callback, View.OnTouc
 
         setOnTouchListener(View.OnTouchListener { view, motionEvent ->
             onTouch(view, motionEvent)
-            return@OnTouchListener true;
+            return@OnTouchListener true
         })
     }
 
@@ -63,8 +63,8 @@ class Joystick : SurfaceView { // implements SurfaceHolder.Callback, View.OnTouc
         // update stored x,y & radius values
         stickX = (newX - centerX) / baseRadius;
         stickY = (newY - centerY) / baseRadius;
-        val angleRadians = atan2(newY, newX).toDouble()
-        val angleDegrees = Math.toDegrees(angleRadians)
+        stickRadians = atan2(newY, newX)
+        //val angleDegrees = Math.toDegrees(angleRadians)
         // redraw joysticks
         if (holder.surface.isValid) {
             val myCanvas: Canvas = this.holder.lockCanvas() //Stuff to draw
