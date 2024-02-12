@@ -11,12 +11,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.myprogram.ui.theme.MyProgramTheme
+import android.widget.Button
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_page)
 
+
+        val LeftStick: Joystick = findViewById(R.id.JoystickL)
+        val RightStick: Joystick = findViewById(R.id.JoystickR)
+        val test = LeftStick.stickX
+
+        val temp = Game(this)
+    }
+    override fun (){
 
     }
 }
