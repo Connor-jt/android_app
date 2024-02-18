@@ -6,10 +6,13 @@ import com.example.myprogram.Render
 
 const val MAX_TPS:Long = 30
 const val TPS_PERIOD:Long = 1000 / MAX_TPS
-class Engine(canvas: SurfaceHolder) : Thread() {
+class Engine(canvas: SurfaceHolder, inputs:GameInput) : Thread() {
     private var isRunning = true
     private val game:Game = Game()
     private val renderer:Render = Render(canvas, game)
+    // publicly accessible data
+    var TPS: Double = 0.0;
+    var FPS: Double = 0.0;
 
     init {start()}
     fun Terminate() {
@@ -21,7 +24,7 @@ class Engine(canvas: SurfaceHolder) : Thread() {
         }
     }
     fun GameTick(){
-
+        game.tick()
     }
     fun GameRender(){
         renderer.draw()
@@ -34,20 +37,16 @@ class Engine(canvas: SurfaceHolder) : Thread() {
         // Declare time and cycle count variables
         var updateCount = 0
         var frameCount = 0
-        var startTime: Long
         var elapsedTime: Long
         var sleepTime: Long
-        // publically accessible data
-        var TPS: Double;
-        var FPS: Double;
-
+        var startTime: Long = System.currentTimeMillis()
         // Game loop
-        startTime = System.currentTimeMillis()
         while (isRunning) {
+
             // run game
             GameTick()
-            updateCount++
             GameRender()
+            updateCount++
             frameCount++;
 
             // Pause game loop to not exceed target TPS

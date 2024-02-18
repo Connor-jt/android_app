@@ -16,18 +16,9 @@ import kotlin.math.sqrt
 
 class Joystick : SurfaceView { // implements SurfaceHolder.Callback, View.OnTouchListener
     // private state values
-    private var inputX: Float = 0f
-    private var inputY: Float = 0f
-    // public state variables
-    var stickX: Float
-        get() = inputX
-        private set(value) {inputX = value}
-    var stickY: Float
-        get() = inputY
-        private set(value) {inputY = value}
-    var stickRadians: Float
-        get() = 0f // it would be ideal to cache the results instead of recomputing it each time its called???
-        private set(value) {} // that would be a tradeoff i guess
+    var inputX: Float = 0f
+    var inputY: Float = 0f
+    fun stickRadians():Float{ return atan2(inputX, inputY)}
 
     // junk
     constructor(context: Context) : super(context) {init()}
@@ -61,9 +52,8 @@ class Joystick : SurfaceView { // implements SurfaceHolder.Callback, View.OnTouc
     }
     private fun updateJoystick(newX: Float, newY: Float) {
         // update stored x,y & radius values
-        stickX = (newX - centerX) / baseRadius;
-        stickY = (newY - centerY) / baseRadius;
-        stickRadians = atan2(newY, newX)
+        inputX = (newX - centerX) / baseRadius;
+        inputY = (newY - centerY) / baseRadius;
         //val angleDegrees = Math.toDegrees(angleRadians)
         // redraw joysticks
         if (holder.surface.isValid) {
