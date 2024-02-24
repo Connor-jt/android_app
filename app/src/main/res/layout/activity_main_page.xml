@@ -14,31 +14,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="fill" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/debug1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="null" />
-
-        <TextView
-            android:id="@+id/debug2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="null" />
-
-        <TextView
-            android:id="@+id/debug3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="null" />
-
-    </LinearLayout>
-
     <FrameLayout
         android:id="@+id/JoystickRPanel"
         android:layout_width="200dp"

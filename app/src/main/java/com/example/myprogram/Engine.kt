@@ -8,7 +8,7 @@ const val MAX_TPS:Long = 30
 const val TPS_PERIOD:Long = 1000 / MAX_TPS
 class Engine(canvas: SurfaceHolder, inputs:GameInput) : Thread() {
     private var isRunning = true
-    private val game:Game = Game()
+    private val game:Game = Game(inputs)
     private val renderer:Render = Render(canvas, game)
     // publicly accessible data
     var TPS: Double = 0.0;
